@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Intent Handoff — Decay Tracker</title>
+  <title>Intent Handoff System</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #050505; min-height: 100vh; font-family: monospace; color: #e5e5e5; padding: 40px 20px; }
@@ -11,11 +11,6 @@
     .header { margin-bottom: 32px; }
     .header h1 { font-size: 20px; color: #fff; margin-bottom: 6px; }
     .header p { color: #555; font-size: 12px; line-height: 1.6; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-    .tab { padding: 8px 20px; border-radius: 8px; border: 1px solid #222; background: #0f0f0f; color: #555; cursor: pointer; font-family: monospace; font-size: 12px; }
-    .tab.active { background: #fff; color: #000; border-color: #fff; font-weight: bold; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
     .explainer { background: #0f0f0f; border: 1px solid #222; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
     .explainer h2 { font-size: 11px; color: #555; margin-bottom: 12px; }
     .explainer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -35,10 +30,12 @@
     input:focus, textarea:focus { border-color: #555; }
     .btn { width: 100%; padding: 12px 0; background: #fff; border: none; border-radius: 8px; color: #000; cursor: pointer; font-family: monospace; font-size: 13px; font-weight: bold; margin-top: 12px; }
     .btn:hover { background: #e5e5e5; }
-    .btn-race { background: #7c3aed; color: #fff; }
-    .btn-race:hover { background: #6d28d9; }
-    .section-title { color: #555; font-size: 11px; margin-bottom: 12px; }
-    .hops { margin-bottom: 24px; }
+    .section { margin-bottom: 32px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .section-number { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+    .section-title { font-size: 13px; font-weight: bold; color: #fff; }
+    .section-sub { font-size: 11px; color: #555; margin-top: 2px; }
+    .connector { width: 2px; height: 24px; background: #1a1a1a; margin: 0 auto 0 13px; margin-bottom: 8px; }
     .hop { background: #0f0f0f; border-radius: 10px; padding: 16px; margin-bottom: 12px; border-left: 3px solid #333; }
     .hop.healthy { border-color: #22c55e; }
     .hop.degraded { border-color: #f59e0b; }
@@ -58,24 +55,25 @@
     .bar { height: 100%; border-radius: 4px; }
     .hop-action { color: #aaa; font-size: 11px; }
     .hop-meaning { color: #444; font-size: 10px; margin-top: 4px; }
-    .final { border-radius: 12px; padding: 24px; margin-bottom: 24px; }
-    .final-title { font-size: 12px; color: #555; margin-bottom: 12px; }
-    .final-action { font-size: 22px; font-weight: bold; margin-bottom: 10px; }
-    .final-reason { color: #aaa; font-size: 12px; line-height: 1.8; }
-    .legend { background: #0f0f0f; border: 1px solid #222; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-    .legend h2 { font-size: 11px; color: #555; margin-bottom: 12px; }
-    .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #aaa; }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .race-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-    .agent-card { background: #0f0f0f; border: 1px solid #222; border-radius: 10px; padding: 16px; text-align: center; }
-    .agent-name { font-size: 12px; font-weight: bold; color: #fff; margin-bottom: 8px; }
-    .agent-status { font-size: 11px; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
-    .agent-outcome { font-size: 10px; color: #555; }
-    .race-log { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; font-size: 11px; color: #555; line-height: 2; margin-bottom: 24px; }
+    .race-grid { display: grid; gap: 12px; margin-bottom: 16px; }
+    .agent-card { background: #0f0f0f; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+    .agent-name { font-size: 12px; font-weight: bold; color: #fff; }
+    .agent-status { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: bold; }
+    .agent-outcome { font-size: 11px; color: #555; }
+    .race-log { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; font-size: 11px; line-height: 2; margin-bottom: 16px; }
     .race-log .win { color: #22c55e; }
     .race-log .deny { color: #ef4444; }
     .race-log .info { color: #f59e0b; }
+    .final-box { border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .final-label { font-size: 11px; color: #555; margin-bottom: 10px; }
+    .final-action { font-size: 22px; font-weight: bold; margin-bottom: 10px; }
+    .final-reason { color: #aaa; font-size: 12px; line-height: 1.8; }
+    .legend { background: #0f0f0f; border: 1px solid #222; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+    .legend h2 { font-size: 11px; color: #555; margin-bottom: 10px; }
+    .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #aaa; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .divider { border: none; border-top: 1px solid #111; margin: 32px 0; }
     .footer { text-align: center; color: #333; font-size: 11px; margin-top: 32px; }
     .footer a { color: #555; text-decoration: none; }
   </style>
@@ -85,121 +83,120 @@
 
   <div class="header">
     <h1>⚡ Intent Handoff System</h1>
-    <p>Most agent systems pass state between agents. This passes <strong style="color:#fff">intent</strong> — and tracks how it degrades with every hop. Two demos: handoff decay and race condition resolution.</p>
+    <p>Most agent systems pass <strong style="color:#fff">state</strong> between agents. This passes <strong style="color:#fff">intent</strong> — and tracks how it degrades with every hop. One continuous flow: intent created → race resolved → handoff executed → final decision.</p>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('handoff')">Handoff Simulator</button>
-    <button class="tab" onclick="switchTab('race')">Race Condition</button>
+  <div class="explainer">
+    <h2>HOW THE FULL FLOW WORKS</h2>
+    <div class="explainer-grid">
+      <div class="explainer-item">
+        <div class="label">1. INTENT CREATED</div>
+        <div class="value">A root agent wraps the task in an envelope carrying the why, constraints, and a confidence score.</div>
+      </div>
+      <div class="explainer-item">
+        <div class="label">2. RACE RESOLVED</div>
+        <div class="value">Multiple agents race to claim the envelope. First wins a time-bounded lease. Others are denied gracefully.</div>
+      </div>
+      <div class="explainer-item">
+        <div class="label">3. HANDOFF WITH DECAY</div>
+        <div class="value">The winning agent passes the envelope through the chain. Confidence drops 12% per hop.</div>
+      </div>
+      <div class="explainer-item">
+        <div class="label">4. FINAL DECISION</div>
+        <div class="value">Below 0.40 confidence → human reanchor. Above 5 hops → abort. Otherwise → proceed.</div>
+      </div>
+    </div>
   </div>
 
-  <!-- TAB 1 — HANDOFF SIMULATOR -->
-  <div id="tab-handoff" class="tab-content active">
-
-    <div class="explainer">
-      <h2>HOW IT WORKS</h2>
-      <div class="explainer-grid">
-        <div class="explainer-item">
-          <div class="label">INTENT ENVELOPE</div>
-          <div class="value">Every task carries a "why" — the original reason. This travels with the task across agents.</div>
-        </div>
-        <div class="explainer-item">
-          <div class="label">CONFIDENCE DECAY</div>
-          <div class="value">Each hop reduces confidence by 12%. More agents = more dilution of original intent.</div>
-        </div>
-        <div class="explainer-item">
-          <div class="label">REANCHOR THRESHOLD</div>
-          <div class="value">Below 0.40 confidence, the system routes to a human instead of blindly executing.</div>
-        </div>
-        <div class="explainer-item">
-          <div class="label">MAX HOPS</div>
-          <div class="value">After 5 hops the task aborts and escalates regardless of confidence.</div>
-        </div>
-      </div>
+  <div class="legend">
+    <h2>STATUS LEGEND</h2>
+    <div class="legend-grid">
+      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Healthy — proceed normally</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Degraded — proceed with caution</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Needs reanchor — route to human</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Max hops exceeded — abort</div>
     </div>
-
-    <div class="legend">
-      <h2>STATUS LEGEND</h2>
-      <div class="legend-grid">
-        <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Healthy — proceed normally</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Degraded — proceed with caution</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Needs reanchor — route to human</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Max hops exceeded — abort</div>
-      </div>
-    </div>
-
-    <div class="presets">
-      <div class="preset-label">QUICK SCENARIOS</div>
-      <button class="preset-btn" onclick="loadPreset(0)">💸 $50M DeFi Swap — 6 agents, high stakes financial routing</button>
-      <button class="preset-btn" onclick="loadPreset(1)">🤖 Customer Support — 4 agents, complaint escalation</button>
-      <button class="preset-btn" onclick="loadPreset(2)">📋 Research Task — 3 agents, clean handoff demo</button>
-      <button class="preset-btn" onclick="loadPreset(3)">🔥 Worst Case — 7 agents, watch it collapse</button>
-    </div>
-
-    <div class="card">
-      <h2>CONFIGURE YOUR SCENARIO</h2>
-      <div class="field-label">TASK</div>
-      <div class="field-hint">What needs to be done?</div>
-      <input id="task" value="find the cheapest gas route for swapping $50M USDT to AAVE" />
-      <div class="field-label">WHY (the intent)</div>
-      <div class="field-hint">The reason behind the task — this is what decays</div>
-      <textarea id="why">user wants to minimize cost, not speed — large institutional order</textarea>
-      <div class="field-label">STARTING CONFIDENCE (0.0 – 1.0)</div>
-      <div class="field-hint">How confident is the system in the original intent?</div>
-      <input id="confidence" type="number" min="0" max="1" step="0.01" value="0.92" />
-      <div class="field-label">AGENTS (comma separated, in order)</div>
-      <div class="field-hint">First agent is the origin. Each subsequent agent is one hop.</div>
-      <input id="agents" value="RootAgent, PricingAgent, LiquidityAgent, ClassifierAgent, ExecutionAgent, VerificationAgent" />
-      <button class="btn" onclick="simulate()">▶ SIMULATE HANDOFF</button>
-    </div>
-
-    <div id="hops" class="hops" style="display:none"></div>
-    <div id="final" style="display:none"></div>
-
   </div>
 
-  <!-- TAB 2 — RACE CONDITION -->
-  <div id="tab-race" class="tab-content">
+  <div class="presets">
+    <div class="preset-label">QUICK SCENARIOS</div>
+    <button class="preset-btn" onclick="loadPreset(0)">💸 $50M DeFi Swap — 6 agents, high stakes financial routing</button>
+    <button class="preset-btn" onclick="loadPreset(1)">🤖 Customer Support — 4 agents, complaint escalation</button>
+    <button class="preset-btn" onclick="loadPreset(2)">📋 Research Task — 3 agents, clean handoff demo</button>
+    <button class="preset-btn" onclick="loadPreset(3)">🔥 Worst Case — 7 agents, watch it collapse</button>
+  </div>
 
-    <div class="explainer">
-      <h2>THE RACE CONDITION PROBLEM</h2>
-      <div class="explainer-grid">
-        <div class="explainer-item">
-          <div class="label">THE PROBLEM</div>
-          <div class="value">Two agents claim the same intent simultaneously. Without a lease system, both execute — causing duplicate or conflicting actions.</div>
-        </div>
-        <div class="explainer-item">
-          <div class="label">THE FIX — INTENT LEASE</div>
-          <div class="value">First agent to claim wins a time-bounded lease. Others are denied gracefully. If the winner fails, the lease expires and another agent can claim.</div>
-        </div>
-        <div class="explainer-item">
-          <div class="label">LEASE STATES</div>
-          <div class="value">Unclaimed → Leased → Completed (or Expired). Decay tracker runs independently — even a valid lease gets aborted if intent degrades.</div>
-        </div>
-        <div class="explainer-item">
-          <div class="label">WHY THIS MATTERS</div>
-          <div class="value">Most handoff systems ignore concurrent claims. This is the real edge case that causes silent failures in production agent systems.</div>
+  <div class="card">
+    <h2>CONFIGURE YOUR SCENARIO</h2>
+    <div class="field-label">TASK</div>
+    <div class="field-hint">What needs to be done?</div>
+    <input id="task" value="find the cheapest gas route for swapping $50M USDT to AAVE" />
+    <div class="field-label">WHY (the intent)</div>
+    <div class="field-hint">The reason behind the task — this is what decays across hops</div>
+    <textarea id="why">user wants to minimize cost, not speed — large institutional order</textarea>
+    <div class="field-label">STARTING CONFIDENCE (0.0 – 1.0)</div>
+    <input id="confidence" type="number" min="0" max="1" step="0.01" value="0.92" />
+    <div class="field-label">COMPETING AGENTS (first 3 race to claim, rest form the handoff chain)</div>
+    <div class="field-hint">Comma separated. First wins the lease. All agents participate in the handoff.</div>
+    <input id="agents" value="RootAgent, PricingAgent, LiquidityAgent, ClassifierAgent, ExecutionAgent, VerificationAgent" />
+    <button class="btn" onclick="runFullFlow()">▶ RUN FULL FLOW</button>
+  </div>
+
+  <div id="output" style="display:none">
+
+    <!-- STEP 1 — INTENT CREATED -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:#22c55e22;color:#22c55e;border:1px solid #22c55e">1</div>
+        <div>
+          <div class="section-title">Intent Created</div>
+          <div class="section-sub">Root agent wraps the task in an intent envelope</div>
         </div>
       </div>
+      <div id="step1"></div>
     </div>
 
-    <div class="card">
-      <h2>CONFIGURE RACE SCENARIO</h2>
-      <div class="field-label">TASK</div>
-      <input id="race-task" value="execute $50M USDT to AAVE swap via TWAP" />
-      <div class="field-label">WHY (the intent)</div>
-      <textarea id="race-why">institutional order — minimize cost over speed</textarea>
-      <div class="field-label">STARTING CONFIDENCE</div>
-      <input id="race-confidence" type="number" min="0" max="1" step="0.01" value="0.88" />
-      <div class="field-label">COMPETING AGENTS (comma separated)</div>
-      <div class="field-hint">All agents will race to claim the same intent simultaneously</div>
-      <input id="race-agents" value="ExecutionAgent-A, ExecutionAgent-B, ExecutionAgent-C" />
-      <div class="field-label">LEASE DURATION (seconds)</div>
-      <input id="race-lease" type="number" value="30" />
-      <button class="btn btn-race" onclick="simulateRace()">⚡ SIMULATE RACE</button>
+    <div class="connector"></div>
+
+    <!-- STEP 2 — RACE CONDITION -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b">2</div>
+        <div>
+          <div class="section-title">Race Condition Resolved</div>
+          <div class="section-sub">Multiple agents compete — first to claim wins the lease</div>
+        </div>
+      </div>
+      <div id="step2"></div>
     </div>
 
-    <div id="race-results" style="display:none"></div>
+    <div class="connector"></div>
+
+    <!-- STEP 3 — HANDOFF WITH DECAY -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed">3</div>
+        <div>
+          <div class="section-title">Handoff with Decay</div>
+          <div class="section-sub">Intent passes through agents — confidence drops each hop</div>
+        </div>
+      </div>
+      <div id="step3"></div>
+    </div>
+
+    <div class="connector"></div>
+
+    <!-- STEP 4 — FINAL DECISION -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:#ef444422;color:#ef4444;border:1px solid #ef4444">4</div>
+        <div>
+          <div class="section-title">Final Decision</div>
+          <div class="section-sub">System determines whether to proceed, reanchor, or abort</div>
+        </div>
+      </div>
+      <div id="step4"></div>
+    </div>
 
   </div>
 
@@ -242,21 +239,13 @@
     }
   ]
 
-  function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'))
-    document.getElementById(`tab-${tab}`).classList.add('active')
-    event.target.classList.add('active')
-  }
-
   function loadPreset(i) {
     const p = PRESETS[i]
     document.getElementById('task').value = p.task
     document.getElementById('why').value = p.why
     document.getElementById('confidence').value = p.confidence
     document.getElementById('agents').value = p.agents
-    document.getElementById('hops').style.display = 'none'
-    document.getElementById('final').style.display = 'none'
+    document.getElementById('output').style.display = 'none'
   }
 
   function getStatus(confidence, hops) {
@@ -283,18 +272,68 @@
     return { healthy: '#22c55e', degraded: '#f59e0b', needs_reanchor: '#ef4444', exceeded_max_hops: '#a78bfa' }[status]
   }
 
-  function simulate() {
+  function runFullFlow() {
     const task = document.getElementById('task').value.trim()
     const why = document.getElementById('why').value.trim()
     const startConfidence = parseFloat(document.getElementById('confidence').value)
     const agents = document.getElementById('agents').value.split(',').map(a => a.trim()).filter(Boolean)
 
-    const hopsEl = document.getElementById('hops')
-    const finalEl = document.getElementById('final')
-    hopsEl.innerHTML = `<div class="section-title">HOP BY HOP BREAKDOWN</div>`
-    hopsEl.style.display = 'block'
-    finalEl.style.display = 'none'
+    document.getElementById('output').style.display = 'block'
 
+    // ── STEP 1 — INTENT CREATED ──
+    document.getElementById('step1').innerHTML = `
+      <div class="hop healthy" style="border-color:#22c55e">
+        <div class="hop-header">
+          <div class="hop-title">${agents[0]} — Origin</div>
+          <div class="hop-badge badge-healthy">ENVELOPE CREATED</div>
+        </div>
+        <div style="color:#555;font-size:11px;margin-bottom:4px">TASK</div>
+        <div style="color:#fff;font-size:12px;margin-bottom:10px">${task}</div>
+        <div style="color:#555;font-size:11px;margin-bottom:4px">WHY</div>
+        <div style="color:#aaa;font-size:12px;margin-bottom:10px">${why}</div>
+        <div class="confidence-row">
+          <div class="confidence-label">STARTING CONFIDENCE</div>
+          <div class="confidence-value" style="color:#22c55e">${startConfidence.toFixed(2)}</div>
+        </div>
+        <div class="bar-wrap"><div class="bar" style="width:${startConfidence*100}%;background:#22c55e"></div></div>
+      </div>
+    `
+
+    // ── STEP 2 — RACE CONDITION ──
+    const racers = agents.slice(0, Math.min(3, agents.length))
+    const winner = racers[0]
+    const losers = racers.slice(1)
+    const leaseExpiry = new Date(Date.now() + 30000).toLocaleTimeString()
+
+    const agentCards = racers.map((agent, i) => {
+      const isWinner = i === 0
+      const color = isWinner ? '#22c55e' : '#ef4444'
+      const statusText = isWinner ? '✅ LEASE GRANTED' : '❌ DENIED'
+      const outcome = isWinner ? `Lease expires at ${leaseExpiry}` : `Held by ${winner}`
+      return `
+        <div class="agent-card" style="border:1px solid ${color}">
+          <div>
+            <div class="agent-name">${agent}</div>
+            <div class="agent-outcome">${outcome}</div>
+          </div>
+          <div class="agent-status" style="background:${color}22;color:${color};border:1px solid ${color}">${statusText}</div>
+        </div>
+      `
+    }).join('')
+
+    const logLines = [
+      `<span class="info">All ${racers.length} agents attempt to claim envelope simultaneously...</span>`,
+      `<span class="win">✅ ${winner} claimed lease — expires at ${leaseExpiry}</span>`,
+      ...losers.map(l => `<span class="deny">❌ ${l} denied — lease active, held by ${winner}</span>`)
+    ]
+
+    document.getElementById('step2').innerHTML = `
+      <div class="race-grid">${agentCards}</div>
+      <div class="race-log">${logLines.join('<br/>')}</div>
+    `
+
+    // ── STEP 3 — HANDOFF WITH DECAY ──
+    let hopsHtml = ''
     let lastResult = null
 
     agents.forEach((agent, i) => {
@@ -307,108 +346,46 @@
       const color = getColor(status)
       const prev = agents[i - 1]
 
-      const hopEl = document.createElement('div')
-      hopEl.className = `hop ${status}`
-      hopEl.innerHTML = `
-        <div class="hop-header">
-          <div class="hop-title">HOP ${hops} &mdash; ${prev} &rarr; ${agent}</div>
-          <div class="hop-badge badge-${status}">${status.replace(/_/g, ' ').toUpperCase()}</div>
+      hopsHtml += `
+        <div class="hop ${status}">
+          <div class="hop-header">
+            <div class="hop-title">HOP ${hops} &mdash; ${prev} &rarr; ${agent}</div>
+            <div class="hop-badge badge-${status}">${status.replace(/_/g, ' ').toUpperCase()}</div>
+          </div>
+          <div class="confidence-row">
+            <div class="confidence-label">CONFIDENCE REMAINING</div>
+            <div class="confidence-value" style="color:${color}">${decayed.toFixed(2)} / 1.00</div>
+          </div>
+          <div class="bar-wrap"><div class="bar" style="width:${decayed*100}%;background:${color}"></div></div>
+          <div class="hop-action">→ ${action.replace(/_/g, ' ')}</div>
+          <div class="hop-meaning">${meaning}</div>
         </div>
-        <div class="confidence-row">
-          <div class="confidence-label">CONFIDENCE REMAINING</div>
-          <div class="confidence-value" style="color:${color}">${decayed.toFixed(2)} / 1.00</div>
-        </div>
-        <div class="bar-wrap"><div class="bar" style="width:${decayed * 100}%;background:${color}"></div></div>
-        <div class="hop-action">→ ${action.replace(/_/g, ' ')}</div>
-        <div class="hop-meaning">${meaning}</div>
       `
-      hopsEl.appendChild(hopEl)
       lastResult = { status, action, color, hops, confidence: decayed }
     })
 
+    document.getElementById('step3').innerHTML = hopsHtml
+
+    // ── STEP 4 — FINAL DECISION ──
     if (lastResult) {
       const actionLabel = lastResult.action.replace(/_/g, ' ').toUpperCase()
-      finalEl.style.display = 'block'
-      finalEl.style.cssText = `display:block;background:#0f0f0f;border:1px solid ${lastResult.color};border-radius:12px;padding:24px;margin-bottom:24px`
-      finalEl.innerHTML = `
-        <div class="final-title">FINAL DECISION</div>
-        <div class="final-action" style="color:${lastResult.color}">${actionLabel}</div>
-        <div class="final-reason">
-          After <strong style="color:#fff">${lastResult.hops} hops</strong>, confidence dropped to <strong style="color:${lastResult.color}">${lastResult.confidence.toFixed(2)}</strong>.<br/>
-          Original intent: <em style="color:#aaa">${why}</em><br/><br/>
-          ${lastResult.status === 'needs_reanchor' || lastResult.status === 'exceeded_max_hops'
-            ? `<span style="color:${lastResult.color}">⚠ Cannot proceed safely. Human must re-confirm intent before execution continues.</span>`
-            : `<span style="color:#22c55e">✓ Intent intact. Task may proceed.</span>`}
+      document.getElementById('step4').innerHTML = `
+        <div class="final-box" style="background:#0f0f0f;border:1px solid ${lastResult.color}">
+          <div class="final-label">SYSTEM DECISION</div>
+          <div class="final-action" style="color:${lastResult.color}">${actionLabel}</div>
+          <div class="final-reason">
+            After <strong style="color:#fff">${lastResult.hops} hops</strong>, confidence dropped to <strong style="color:${lastResult.color}">${lastResult.confidence.toFixed(2)}</strong>.<br/>
+            Original intent: <em style="color:#aaa">${why}</em><br/><br/>
+            ${lastResult.status === 'needs_reanchor' || lastResult.status === 'exceeded_max_hops'
+              ? `<span style="color:${lastResult.color}">⚠ Cannot proceed safely. Human must re-confirm the original intent before execution continues.</span>`
+              : `<span style="color:#22c55e">✓ Intent sufficiently intact. Task may proceed to execution.</span>`}
+          </div>
         </div>
       `
     }
-  }
 
-  function simulateRace() {
-    const task = document.getElementById('race-task').value.trim()
-    const why = document.getElementById('race-why').value.trim()
-    const confidence = parseFloat(document.getElementById('race-confidence').value)
-    const agents = document.getElementById('race-agents').value.split(',').map(a => a.trim()).filter(Boolean)
-    const leaseDuration = parseInt(document.getElementById('race-lease').value)
-
-    const resultsEl = document.getElementById('race-results')
-    resultsEl.style.display = 'block'
-
-    // Simulate race — first agent wins
-    const winner = agents[0]
-    const losers = agents.slice(1)
-    const leaseExpiry = new Date(Date.now() + leaseDuration * 1000).toLocaleTimeString()
-
-    // Simulate decay for winner after claiming
-    const decayed = Math.max(0, confidence - DECAY_PER_HOP)
-    const status = getStatus(decayed, 1)
-    const action = getAction(status)
-    const color = getColor(status)
-
-    const agentCards = agents.map((agent, i) => {
-      const isWinner = i === 0
-      const borderColor = isWinner ? '#22c55e' : '#ef4444'
-      const statusText = isWinner ? 'LEASE GRANTED' : 'DENIED'
-      const statusBg = isWinner ? '#22c55e22' : '#ef444422'
-      const statusColor = isWinner ? '#22c55e' : '#ef4444'
-      const outcome = isWinner ? `Processing task...` : `Held by ${winner}`
-      return `
-        <div class="agent-card" style="border-color:${borderColor}">
-          <div class="agent-name">${agent}</div>
-          <div class="agent-status" style="background:${statusBg};color:${statusColor};border:1px solid ${borderColor}">${statusText}</div>
-          <div class="agent-outcome">${outcome}</div>
-        </div>
-      `
-    }).join('')
-
-    const logLines = [
-      `<span class="info">All ${agents.length} agents attempt to claim envelope simultaneously...</span>`,
-      `<span class="win">✅ ${winner} claimed lease — expires at ${leaseExpiry}</span>`,
-      ...losers.map(l => `<span class="deny">❌ ${l} denied — lease active, held by ${winner}</span>`),
-      `<span class="info">${winner} processing task — confidence: ${confidence.toFixed(2)} → ${decayed.toFixed(2)}</span>`,
-      action === 'proceed'
-        ? `<span class="win">✅ ${winner} completed task and released lease</span>`
-        : `<span class="deny">⚠ Intent degraded — ${winner} aborted, lease released for re-anchor</span>`
-    ]
-
-    resultsEl.innerHTML = `
-      <div class="section-title">RACE RESULTS</div>
-      <div class="race-grid">${agentCards}</div>
-      <div class="section-title">EVENT LOG</div>
-      <div class="race-log">${logLines.join('<br/>')}</div>
-      <div style="background:#0f0f0f;border:1px solid ${color};border-radius:12px;padding:24px;margin-bottom:24px">
-        <div class="final-title">OUTCOME</div>
-        <div class="final-action" style="color:${color}">${action.replace(/_/g, ' ').toUpperCase()}</div>
-        <div class="final-reason">
-          Winner: <strong style="color:#fff">${winner}</strong><br/>
-          Denied: <strong style="color:#ef4444">${losers.join(', ')}</strong><br/>
-          Confidence after claim: <strong style="color:${color}">${decayed.toFixed(2)}</strong><br/><br/>
-          ${action === 'proceed'
-            ? `<span style="color:#22c55e">✓ Lease granted, task completed, lease released cleanly.</span>`
-            : `<span style="color:#ef4444">⚠ Intent degraded post-claim. Task aborted. Human reanchor required.</span>`}
-        </div>
-      </div>
-    `
+    // scroll to output
+    document.getElementById('output').scrollIntoView({ behavior: 'smooth' })
   }
 </script>
 </body>
